@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamro Awash Griha - Management Dashboard</title>
+    <style>
+        :root {
+            --bg-dark: #111827;
+            --panel-dark: #1F2937;
+            --accent-gold: #D4AF37;
+            --text-light: #F9FAFB;
+            --border-color: #374151;
+            --green: #10B981;
+            --red: #EF4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); line-height: 1.6; }
+
+        .dashboard-container { display: flex; min-height: 100vh; }
+        
+        /* Sidebar Navigation */
+        sidebar { width: 240px; background: var(--panel-dark); border-right: 1px solid var(--border-color); padding: 20px 10px; }
+        .brand { font-size: 1.2rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 30px; padding-left: 10px; }
+        .menu-list { list-style: none; }
+        .menu-item { padding: 12px 15px; border-radius: 6px; color: #9CA3AF; cursor: pointer; font-weight: 500; margin-bottom: 5px; }
+        .menu-item:hover, .menu-item.active { background: var(--accent-gold); color: var(--bg-dark); font-weight: bold; }
+
+        /* Main Content */
+        main { flex: 1; padding: 30px; overflow-y: auto; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .admin-tag { background: rgba(212,175,55,0.1); color: var(--accent-gold); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; }
+
+        .panel-card { background: var(--panel-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+        h2 { color: var(--accent-gold); font-size: 1.3rem; margin-bottom: 15px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background: rgba(0,0,0,0.2); color: #9CA3AF; }
+
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        .badge-active { background: rgba(16,185,129,0.2); color: var(--green); }
+        .badge-cancelled { background: rgba(239,68,68,0.2); color: var(--red); }
+
+        .btn-sm { padding: 5px 10px; border: none; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; margin-right: 4px; }
+        .btn-green { background: var(--green); color: white; }
+        .btn-red { background: var(--red); color: white; }
+        .btn-gold { background: var(--accent-gold); color: var(--bg-dark); }
+        .tab-section { display: none; }
+        .tab-section.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <sidebar>
+            <div class="brand">🪷 Hamro Awash</div>
+            <ul class="menu-list">
+                <li class="menu-item active" onclick="switchNav('tab-bookings', this)">📋 Room Bookings</li>
+                <li class="menu-item" onclick="switchNav('tab-orders', this)">🍲 Food & Amenity Orders</li>
+                <li class="menu-item" onclick="switchNav('tab-users', this)">👥 Registered Guests</li>
+                <li class="menu-item" onclick="switchNav('tab-billing', this)">🧾 Master Billing</li>
+            </ul>
+        </sidebar>
+
+        <!-- Main Workspace -->
+        <main>
+            <div class="header-bar">
+                <h1 id="pageTitle">Room Bookings</h1>
+                <span class="admin-tag">Logged in: admin@hamroaawashgriha.com</span>
+            </div>
+
+            <!-- 1. ROOM BOOKINGS TAB -->
+            <div id="tab-bookings" class="tab-section active">
+                <div class="panel-card">
+                    <h2>Active & Past Room Reservations</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>ROOM</th>
+                                <th>GUEST NAME</th>
+                                <th>CHECK-IN</th>
+                                <th>CHECK-OUT</th>
+                                <th>STATUS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. ORDERS TAB -->
+            <div id="tab-orders" class="tab-section">
+                <div class="panel-card">
+                    <h2>Live Service & Food Orders</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>GUEST</th>
+                                <th>ITEM</th>
+                                <th>QTY</th>
+                                <th>NOTE</th>
+                                <th>AMOUNT</th>
+                                <th>STATUS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. USERS TAB -->
+            <div id="tab-users" class="tab-section">
+                <div class="panel-card">
+                    <h2>Registered Guest Accounts</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>GUEST ID</th>
+                                <th>NAME</th>
+                                <th>EMAIL</th>
+                                <th>BOOKINGS</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. MASTER BILLING TAB -->
+            <div id="tab-billing" class="tab-section">
+                <div class="panel-card">
+                    <h2>Itemized Unified Checkout Invoices</h2>
+                    <p style="font-size:0.85rem; color:#9CA3AF; margin-bottom:15px;">Combines Room charges + Food + Services into one master bill.</p>
+                    <div id="billingContainer"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function switchNav(tabId, element) {
+            document.querySelectorAll('.tab-section').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+            document.getElementById('pageTitle').innerText = element.innerText.replace(/[^a-zA-Z\s]/g, '');
+        }
+
+        function renderAll() {
+            renderBookings();
+            renderOrders();
+            renderUsers();
+            renderBilling();
+        }
+
+        // --- BOOKINGS LOGIC ---
+        function renderBookings() {
+            const table = document.getElementById('bookingsTableBody');
+            const bookings = JSON.parse(localStorage.getItem('hotelBookings') || '[]');
+            table.innerHTML = bookings.length === 0 ? `<tr><td colspan="7">No room bookings yet.</td></tr>` : '';
+
+            bookings.forEach((b, i) => {
+                const statusBadge = b.status === 'Cancelled' ? `<span class="badge badge-cancelled">Cancelled</span>` : `<span class="badge badge-active">${b.status}</span>`;
+                table.innerHTML += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><b>${b.roomNo}</b></td>
+                        <td>${b.guestName}</td>
+                        <td>${b.checkIn}</td>
+                        <td>${b.checkOut}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            ${b.status !== 'Cancelled' ? `
+                                <button class="btn-sm btn-red" onclick="updateBookingStatus(${i}, 'Cancelled')">Cancel</button>
+                                <button class="btn-sm btn-gold" onclick="updateBookingStatus(${i}, 'Checked Out')">Checkout</button>
+                            ` : 'N/A'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateBookingStatus(index, newStatus) {
+            let bookings = JSON.parse(localStorage.getItem('hotelBookings') || '[]');
+            bookings[index].status = newStatus;
+            localStorage.setItem('hotelBookings', JSON.stringify(bookings));
+            renderAll();
+        }
+
+        // --- ORDERS LOGIC ---
+        function renderOrders() {
+            const table = document.getElementById('ordersTableBody');
+            const orders = JSON.parse(localStorage.getItem('hotelFoodOrders') || '[]');
+            table.innerHTML = orders.length === 0 ? `<tr><td colspan="7">No service/food orders yet.</td></tr>` : '';
+
+            orders.forEach((o, i) => {
+                table.innerHTML += `
+                    <tr>
+                        <td><b>${o.guestName}</b></td>
+                        <td>${o.item}</td>
+                        <td>${o.qty}</td>
+                        <td style="color:#D4AF37;">${o.note}</td>
+                        <td>Rs. ${o.total}</td>
+                        <td><span class="badge badge-active">${o.status}</span></td>
+                        <td>
+                            ${o.status === 'Pending' ? `<button class="btn-sm btn-green" onclick="completeOrder(${i})">Mark Delivered</button>` : 'Delivered'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function completeOrder(index) {
+            let orders = JSON.parse(localStorage.getItem('hotelFoodOrders') || '[]');
+            orders[index].status = 'Delivered';
+            localStorage.setItem('hotelFoodOrders', JSON.stringify(orders));
+            renderAll();
+        }
+
+        // --- USERS LOGIC ---
+        function renderUsers() {
+            const table = document.getElementById('usersTableBody');
+            const users = JSON.parse(localStorage.getItem('hotelUsers') || '[]');
+            table.innerHTML = users.length === 0 ? `<tr><td colspan="5">No registered guests yet.</td></tr>` : '';
+
+            users.forEach((u) => {
+                table.innerHTML += `
+                    <tr>
+                        <td><code>${u.guestId}</code></td>
+                        <td><b>${u.name}</b></td>
+                        <td>${u.email}</td>
+                        <td>${u.bookingsCount || 0}</td>
+                        <td><span class="badge badge-active">${u.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- MASTER UNIFIED BILLING LOGIC ---
+        function renderBilling() {
+            const container = document.getElementById('billingContainer');
+            const users = JSON.parse(localStorage.getItem('hotelUsers') || '[]');
+            const bookings = JSON.parse(localStorage.getItem('hotelBookings') || '[]');
+            const orders = JSON.parse(localStorage.getItem('hotelFoodOrders') || '[]');
+
+            container.innerHTML = '';
+            if (users.length === 0) {
+                container.innerHTML = '<p>No master billing invoices available.</p>';
+                return;
+            }
+
+            users.forEach(u => {
+                const userRooms = bookings.filter(b => b.guestId === u.guestId && b.status !== 'Cancelled');
+                const userOrders = orders.filter(o => o.guestId === u.guestId);
+                
+                let roomTotal = userRooms.reduce((sum, r) => sum + Number(r.amount), 0);
+                let orderTotal = userOrders.reduce((sum, o) => sum + Number(o.total), 0);
+                let grandTotal = roomTotal + orderTotal;
+
+                if (userRooms.length > 0 || userOrders.length > 0) {
+                    container.innerHTML += `
+                        <div style="background:rgba(0,0,0,0.3); border:1px solid #374151; padding:15px; border-radius:6px; margin-bottom:15px;">
+                            <h3 style="color:#D4AF37;">Invoice for: ${u.name} (${u.email})</h3>
+                            <p style="font-size:0.85rem;">Room Stay Total: <b>Rs. ${roomTotal}</b> | Dining & Services: <b>Rs. ${orderTotal}</b></p>
+                            <h4 style="margin-top:5px; color:#10B981;">Grand Total Bill: Rs. ${grandTotal}</h4>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        renderAll();
+    </script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAp2AlH0qTeeq372bC2lZGYjHuelclJwa0",
+    authDomain: "hamro-awash-griha.firebaseapp.com",
+    projectId: "hamro-awash-griha",
+    storageBucket: "hamro-awash-griha.firebasestorage.app",
+    messagingSenderId: "1001653165735",
+    appId: "1:1001653165735:web:f992f5bca6689bea4a4582",
+    measurementId: "G-MF7G5KE4SB"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script> 
+</body>
+</html>
